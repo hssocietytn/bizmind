@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BizMind AI — Your Business Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0A0A0A;color:#F0EDE8;min-height:100vh}
+
+/* GATE */
+#gate{position:fixed;inset:0;background:#0A0A0A;z-index:9999;display:flex;align-items:center;justify-content:center;padding:2rem}
+#gate.hidden{display:none}
+.gate-box{width:100%;max-width:400px;text-align:center}
+.gate-logo{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#F0EDE8;margin-bottom:6px}
+.gate-logo span{color:#1D9E75}
+.gate-sub{font-size:14px;color:#888780;margin-bottom:2rem;font-weight:300}
+.gate-label{font-size:11px;color:#888780;text-align:left;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.gate-input{width:100%;padding:14px 16px;background:#111111;border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#F0EDE8;font-family:'DM Sans',sans-serif;font-size:18px;margin-bottom:10px;outline:none;transition:border-color .2s;text-align:center;letter-spacing:.15em}
+.gate-input:focus{border-color:#1D9E75}
+.gate-input::placeholder{color:#444;letter-spacing:0;font-size:14px}
+.gate-btn{width:100%;padding:14px;background:#1D9E75;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:background .2s;margin-bottom:10px}
+.gate-btn:hover{background:#0F6E56}
+.gate-error{font-size:13px;color:#D85A30;min-height:18px;margin-bottom:6px}
+.gate-hint{font-size:12px;color:#444}
+.gate-hint a{color:#888780;text-decoration:none}
+
+/* APP */
+.app{max-width:960px;margin:0 auto;padding:1.5rem}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#F0EDE8}
+.logo span{color:#1D9E75}
+.header-sub{font-size:13px;color:#888780}
+
+/* TOOL GRID */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1.5rem}
+.tool-card{background:#111111;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1rem;cursor:pointer;transition:all .15s}
+.tool-card:hover{border-color:rgba(255,255,255,0.15);background:#161616}
+.tool-card.active{border-color:#1D9E75;border-width:1.5px}
+.tool-icon{font-size:22px;margin-bottom:8px}
+.tool-name{font-size:14px;font-weight:500;color:#F0EDE8;margin-bottom:3px}
+.tool-desc{font-size:12px;color:#888780;line-height:1.4}
+
+/* FORM PANEL */
+.form-panel{background:#111111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:1.5rem;margin-bottom:1rem}
+.panel-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#F0EDE8;margin-bottom:4px}
+.panel-sub{font-size:13px;color:#888780;margin-bottom:1.25rem}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;color:#888780;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;background:#1A1A1A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#F0EDE8;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#1D9E75}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.5}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.generate-btn{width:100%;padding:13px;background:#1D9E75;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;margin-top:4px}
+.generate-btn:hover{background:#0F6E56}
+.generate-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* OUTPUT */
+.output-box{background:#0F1A14;border:1px solid rgba(29,158,117,0.2);border-radius:12px;padding:1.25rem;margin-top:1rem}
+.output-label{font-size:11px;color:#1D9E75;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:500}
+.output-text{font-size:14px;line-height:1.8;color:#F0EDE8;white-space:pre-wrap}
+.output-loading{color:#888780;font-size:13px}
+.copy-btn{font-size:12px;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#888780;cursor:pointer;margin-top:12px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.copy-btn:hover{border-color:rgba(255,255,255,0.2);color:#F0EDE8}
+
+/* HISTORY */
+.history{margin-top:1.5rem}
+.history-title{font-size:12px;color:#888780;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.history-item{background:#111111;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.history-item:hover{border-color:rgba(255,255,255,0.12)}
+.history-tool{font-size:11px;color:#1D9E75;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.history-preview{font-size:13px;color:#888780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-width:640px){.app{padding:1rem}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">Biz<span>Mind</span></div>
+    <div class="gate-sub">Enter your access password from your purchase receipt.</div>
+    <div class="gate-label">Access password</div>
+    <input class="gate-input" id="gate-input" type="password" placeholder="Enter password..." onkeydown="if(event.key==='Enter')checkPassword()">
+    <div class="gate-error" id="gate-error"></div>
+    <button class="gate-btn" onclick="checkPassword()">Unlock my access →</button>
+    <div class="gate-hint">Need help? <a href="mailto:hello@bizmindai.co">hello@bizmindai.co</a></div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="logo">Biz<span>Mind</span> AI</div>
+      <div class="header-sub">AI-powered tools for small business owners</div>
+    </div>
+    <div style="font-size:12px;color:#1D9E75;background:rgba(29,158,117,0.1);padding:4px 12px;border-radius:999px;border:1px solid rgba(29,158,117,0.2)">Pro Access</div>
+  </div>
+
+  <div class="tool-grid" id="tool-grid"></div>
+  <div id="form-panel"></div>
+  <div id="history-panel"></div>
+</div>
+
+<script>
+const PASSWORD = 'bizmind2026';
+
+const TOOLS = [
+  {
+    id:'email', icon:'✉️', name:'Cold Email Writer',
+    desc:'B2B outreach that gets replies',
+    fields:[
+      {id:'industry', label:'Your business type', type:'text', placeholder:'e.g. Fresh juice delivery'},
+      {id:'target',   label:'Who you are targeting', type:'text', placeholder:'e.g. Apartment property managers'},
+      {id:'offer',    label:'Your offer or hook', type:'text', placeholder:'e.g. Free weekly juice for the lobby'},
+    ],
+    prompt: f => `Write a short punchy B2B cold email for a ${f.industry} targeting ${f.target}. The offer is: ${f.offer}. Keep it under 120 words. No fluff. Include a subject line. Make it feel human not salesy. End with a soft CTA. Give the full email ready to send.`
+  },
+  {
+    id:'caption', icon:'📱', name:'Social Caption',
+    desc:'TikTok, Instagram, Facebook ready',
+    fields:[
+      {id:'biz',      label:'Your business', type:'text', placeholder:'e.g. Hemp dispensary and dab bar'},
+      {id:'post',     label:'What the post is about', type:'text', placeholder:'e.g. Grand opening of new location'},
+      {id:'platform', label:'Platform', type:'select', options:['TikTok','Instagram','Facebook','LinkedIn']},
+    ],
+    prompt: f => `Write a ${f.platform} caption for a ${f.biz} post about: ${f.post}. Use the platform native tone. Include relevant hashtags at the end. Keep it engaging and authentic. No corporate speak. Give the full caption ready to copy and post.`
+  },
+  {
+    id:'review', icon:'⭐', name:'Review Responder',
+    desc:'Professional replies to Google reviews',
+    fields:[
+      {id:'review',    label:'Paste the review', type:'textarea', placeholder:'e.g. Great vibe but the wait was too long...'},
+      {id:'sentiment', label:'Review sentiment', type:'select', options:['Positive','Negative','Mixed']},
+      {id:'bizname',   label:'Your business name', type:'text', placeholder:'e.g. High Society'},
+    ],
+    prompt: f => `Write a professional warm response to this ${f.sentiment.toLowerCase()} Google review for ${f.bizname}: "${f.review}". Be genuine not scripted. If negative acknowledge and address the concern. Keep under 80 words. Give the full response ready to post.`
+  },
+  {
+    id:'pricing', icon:'💰', name:'Pricing Strategy',
+    desc:'AI-powered price positioning',
+    fields:[
+      {id:'product', label:'Product or service', type:'text', placeholder:'e.g. Weekly fresh juice subscription'},
+      {id:'cost',    label:'Your cost per unit', type:'text', placeholder:'e.g. $12 in ingredients plus delivery'},
+      {id:'market',  label:'Your target market', type:'text', placeholder:'e.g. Luxury apartment residents'},
+    ],
+    prompt: f => `I sell ${f.product}. My cost is ${f.cost}. My target market is ${f.market}. Give me a concrete pricing strategy with 2-3 tiers, the exact recommended prices for each tier, and the psychology behind each price point. Be specific with real numbers.`
+  },
+  {
+    id:'desc', icon:'🛍️', name:'Product Description',
+    desc:'Conversion-focused product copy',
+    fields:[
+      {id:'product',  label:'Product name', type:'text', placeholder:'e.g. Electric shower scrubber'},
+      {id:'audience', label:'Target customer', type:'text', placeholder:'e.g. Women 25-45 who care about skin'},
+      {id:'benefits', label:'Top 3 benefits', type:'textarea', placeholder:'e.g. Exfoliates skin, saves time, feels luxurious'},
+    ],
+    prompt: f => `Write a conversion-focused product description for: ${f.product}. Target customer: ${f.audience}. Key benefits: ${f.benefits}. Format: punchy headline, 2-3 sentences of body copy, then bullet points of features. Persuasive but not hype-y. Give the full description ready to use.`
+  },
+  {
+    id:'followup', icon:'🔁', name:'Follow-Up Sequence',
+    desc:'3-email follow-up after no reply',
+    fields:[
+      {id:'context', label:'Original outreach context', type:'textarea', placeholder:'e.g. Pitched juice delivery to property manager, no reply after 5 days'},
+      {id:'prospect',label:'Prospect type', type:'text', placeholder:'e.g. Property manager'},
+    ],
+    prompt: f => `Write a 3-email follow-up sequence for: ${f.context}. Target: ${f.prospect}. Email 1: day 3 brief check-in. Email 2: day 7 add value or insight. Email 3: day 14 breakup email. Each under 70 words. Professional and human never desperate. Give all 3 emails ready to send with subject lines.`
+  },
+  {
+    id:'bizplan', icon:'📋', name:'Business Plan Builder',
+    desc:'One-page plan in 60 seconds',
+    fields:[
+      {id:'concept',  label:'Your business concept', type:'text', placeholder:'e.g. Fresh juice delivery to apartment buildings'},
+      {id:'location', label:'Your city or market', type:'text', placeholder:'e.g. Nashville TN'},
+      {id:'budget',   label:'Your starting budget', type:'text', placeholder:'e.g. $5,000'},
+    ],
+    prompt: f => `Write a concise one-page business plan for: ${f.concept} in ${f.location} with a starting budget of ${f.budget}. Include: problem, solution, target customer, revenue model, startup costs breakdown, month 1-3 milestones, and break-even estimate. Be specific with real numbers not ranges.`
+  },
+  {
+    id:'hashtags', icon:'#️⃣', name:'Hashtag Generator',
+    desc:'30 targeted hashtags per post',
+    fields:[
+      {id:'niche',    label:'Your niche or industry', type:'text', placeholder:'e.g. Hemp wellness dispensary'},
+      {id:'post',     label:'What your post is about', type:'text', placeholder:'e.g. New product launch'},
+      {id:'platform2',label:'Platform', type:'select', options:['Instagram','TikTok','Facebook']},
+    ],
+    prompt: f => `Generate 30 targeted hashtags for a ${f.niche} business posting about ${f.post} on ${f.platform2}. Mix of high volume (1M+), medium (100k-1M), and niche (under 100k) hashtags. Group them by category. Give all 30 ready to copy and paste.`
+  },
+  {
+    id:'script', icon:'🎥', name:'Video Script',
+    desc:'TikTok and Reels scripts that convert',
+    fields:[
+      {id:'topic',    label:'Video topic', type:'text', placeholder:'e.g. Why you should start a business in 30 days'},
+      {id:'duration', label:'Video length', type:'select', options:['30 seconds','60 seconds','90 seconds']},
+      {id:'style',    label:'Style', type:'select', options:['Educational','Storytelling','Hook and reveal','Day in the life']},
+    ],
+    prompt: f => `Write a ${f.duration} ${f.style} TikTok video script about: ${f.topic}. Include: hook (first 3 seconds), main content, and CTA. Format with timestamps and directions for the creator. Make it natural and conversational not stiff. Give the full script ready to film.`
+  },
+  {
+    id:'lease', icon:'🏢', name:'Lease Negotiation',
+    desc:'Scripts to negotiate your commercial lease',
+    fields:[
+      {id:'space',    label:'Space details', type:'text', placeholder:'e.g. 800 sqft retail in Nashville asking $2,200/mo NNN'},
+      {id:'budget',   label:'Your max monthly budget', type:'text', placeholder:'e.g. $1,800/mo all in'},
+      {id:'leverage', label:'Your situation', type:'text', placeholder:'e.g. First time tenant, 2 year commit'},
+    ],
+    prompt: f => `Write a professional lease negotiation email for: ${f.space}. My budget is ${f.budget}. My situation: ${f.leverage}. Negotiate: lower base rent, free rent period during buildout, and tenant improvement allowance. Be firm but professional. Give the full email ready to send to the landlord.`
+  },
+  {
+    id:'llc', icon:'🏛️', name:'LLC Operating Agreement',
+    desc:'Draft your operating agreement',
+    fields:[
+      {id:'bizname2', label:'Business name', type:'text', placeholder:'e.g. Mystakinfolk Holdings LLC'},
+      {id:'state',    label:'State of formation', type:'text', placeholder:'e.g. Tennessee'},
+      {id:'members',  label:'Members and ownership %', type:'text', placeholder:'e.g. Jamie Hines 100%'},
+    ],
+    prompt: f => `Draft a complete single-member LLC operating agreement for ${f.bizname2} formed in ${f.state}. Members: ${f.members}. Include: purpose, management structure, capital contributions, profit distribution, voting rights, transfer restrictions, dissolution. Make it legally complete and ready to sign.`
+  },
+  {
+    id:'press', icon:'📰', name:'Press Release',
+    desc:'Get local media attention',
+    fields:[
+      {id:'announcement', label:'What you are announcing', type:'text', placeholder:'e.g. Grand opening of my juice bar'},
+      {id:'location2',    label:'City and location', type:'text', placeholder:'e.g. Nashville TN, 486 Bell Road'},
+      {id:'date',         label:'Opening or event date', type:'text', placeholder:'e.g. April 15 2026'},
+    ],
+    prompt: f => `Write a professional press release announcing: ${f.announcement} in ${f.location2} on ${f.date}. Include: headline, dateline, lead paragraph, body with quotes, boilerplate about the business, and media contact. Format it exactly like a real press release ready to send to local media.`
+  },
+];
+
+let activeTool = TOOLS[0];
+let history = [];
+
+function checkPassword(){
+  const input = document.getElementById('gate-input').value.trim().toLowerCase();
+  const error = document.getElementById('gate-error');
+  if(input === PASSWORD){
+    document.getElementById('gate').classList.add('hidden');
+    sessionStorage.setItem('bm_access','granted');
+  } else {
+    error.textContent = 'Incorrect password. Check your receipt email.';
+    document.getElementById('gate-input').value = '';
+    document.getElementById('gate-input').focus();
+  }
+}
+
+if(sessionStorage.getItem('bm_access') === 'granted'){
+  document.getElementById('gate').classList.add('hidden');
+}
+
+function renderToolGrid(){
+  document.getElementById('tool-grid').innerHTML = TOOLS.map(t => `
+    <div class="tool-card ${t.id===activeTool.id?'active':''}" onclick="selectTool('${t.id}')">
+      <div class="tool-icon">${t.icon}</div>
+      <div class="tool-name">${t.name}</div>
+      <div class="tool-desc">${t.desc}</div>
+    </div>`).join('');
+}
+
+function renderFormPanel(){
+  const t = activeTool;
+  const fieldsHTML = t.fields.map(f => {
+    const isFullWidth = f.type === 'textarea';
+    let input = '';
+    if(f.type === 'textarea'){
+      input = `<textarea class="form-textarea" id="field-${f.id}" placeholder="${f.placeholder||''}"></textarea>`;
+    } else if(f.type === 'select'){
+      input = `<select class="form-select" id="field-${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
+    } else {
+      input = `<input class="form-input" type="text" id="field-${f.id}" placeholder="${f.placeholder||''}">`;
+    }
+    return `<div class="form-group ${isFullWidth?'':''}"><label class="form-label">${f.label}</label>${input}</div>`;
+  });
+
+  // Pair non-textarea fields in rows of 2
+  let formContent = '';
+  let i = 0;
+  while(i < t.fields.length){
+    const f = t.fields[i];
+    if(f.type === 'textarea'){
+      formContent += fieldsHTML[i];
+      i++;
+    } else if(i + 1 < t.fields.length && t.fields[i+1].type !== 'textarea'){
+      formContent += `<div class="form-row">${fieldsHTML[i]}${fieldsHTML[i+1]}</div>`;
+      i += 2;
+    } else {
+      formContent += fieldsHTML[i];
+      i++;
+    }
+  }
+
+  document.getElementById('form-panel').innerHTML = `
+    <div class="form-panel">
+      <div class="panel-title">${t.icon} ${t.name}</div>
+      <div class="panel-sub">${t.desc}</div>
+      ${formContent}
+      <button class="generate-btn" id="gen-btn" onclick="generate()">Generate with AI ↗</button>
+      <div id="output-area"></div>
+    </div>`;
+}
+
+function renderHistory(){
+  if(history.length === 0) return;
+  document.getElementById('history-panel').innerHTML = `
+    <div class="history">
+      <div class="history-title">Recent generations</div>
+      ${history.slice(0,5).map((h,i)=>`
+        <div class="history-item" onclick="showHistory(${i})">
+          <div class="history-tool">${h.tool}</div>
+          <div class="history-preview">${h.text.slice(0,80)}...</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function showHistory(i){
+  const h = history[i];
+  const out = document.getElementById('output-area');
+  if(!out) return;
+  out.innerHTML = `
+    <div class="output-box">
+      <div class="output-label">⚡ ${h.tool}</div>
+      <div class="output-text">${h.text}</div>
+      <button class="copy-btn" onclick="copyOutput(this)">Copy</button>
+    </div>`;
+}
+
+function selectTool(id){
+  activeTool = TOOLS.find(t => t.id === id);
+  renderToolGrid();
+  renderFormPanel();
+}
+
+async function generate(){
+  const fields = {};
+  let allFilled = true;
+  for(const f of activeTool.fields){
+    const el = document.getElementById('field-'+f.id);
+    if(!el || !el.value.trim()){ allFilled = false; break; }
+    fields[f.id] = el.value.trim();
+  }
+  if(!allFilled){ alert('Please fill in all fields.'); return; }
+
+  const prompt = activeTool.prompt(fields);
+  const btn = document.getElementById('gen-btn');
+  const out = document.getElementById('output-area');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  out.innerHTML = `<div class="output-box"><div class="output-loading">Working on it...</div></div>`;
+
+  try {
+    const resp = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: 'You are an expert business copywriter and advisor for small business owners. Be direct, specific, and practical. Output only the requested content with no meta-commentary, no preamble, no "here is your..." intro. Just deliver the content immediately.',
+        message: prompt
+      })
+    });
+    const data = await resp.json();
+    const text = data.text || data.error || 'Something went wrong. Try again.';
+    history.unshift({ tool: activeTool.name, text });
+    out.innerHTML = `
+      <div class="output-box">
+        <div class="output-label">⚡ ${activeTool.name} — ready to use</div>
+        <div class="output-text" id="output-text">${text}</div>
+        <button class="copy-btn" onclick="copyOutput(this)">Copy</button>
+      </div>`;
+    renderHistory();
+  } catch(e) {
+    out.innerHTML = `<div class="output-box"><div class="output-loading">AI unavailable. Try again.</div></div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate with AI ↗';
+}
+
+function copyOutput(btn){
+  const text = document.getElementById('output-text');
+  if(text) navigator.clipboard.writeText(text.innerText);
+  btn.textContent = 'Copied!';
+  setTimeout(()=>btn.textContent='Copy', 1500);
+}
+
+renderToolGrid();
+renderFormPanel();
+</script>
+</body>
+</html>
